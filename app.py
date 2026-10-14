@@ -16,11 +16,11 @@ st.title("🐟 AquaGuard AI: Smart Aquaculture Monitor")
 st.markdown("### AI-Powered Water Quality Classification & Yield Forecasting")
 st.markdown("---")
 
-# Load and train model on WQD.xlsx dataset
+# Load and train model on WQD.xlsx dataset with explicit engine='openpyxl'
 @st.cache_resource
 def load_and_train_model():
-    xls = pd.ExcelFile('WQD.xlsx')
-    df = pd.read_excel(xls, 'Final_Data')
+    xls = pd.ExcelFile('WQD.xlsx', engine='openpyxl')
+    df = pd.read_excel(xls, 'Final_Data', engine='openpyxl')
     
     # Features & Target
     X = df[['Temp', 'Turbidity (cm)', 'DO(mg/L)', 'BOD (mg/L)', 'CO2', 'pH`', 
@@ -59,7 +59,6 @@ hardness = st.sidebar.slider("Hardness (mg L-1)", 10.0, 300.0, 120.0)
 # Main Panel Evaluation Button
 if st.button("🚀 Run AI Pond Health Assessment", use_container_width=True):
     if model_loaded:
-        # Construct input dataframe for prediction
         input_data = pd.DataFrame([[
             temp, turbidity, do_val, bod, co2, ph, 
             alkalinity, hardness, 80.0, ammonia, 
@@ -76,7 +75,6 @@ if st.button("🚀 Run AI Pond Health Assessment", use_container_width=True):
         st.markdown("---")
         st.subheader("📊 AI Model Prediction Results")
         
-        # Display Status based on Classification
         if prediction == 0 or (ammonia < 0.03 and do_val >= 5.0):
             st.success("### STATUS: 🟢 Safe & Healthy (Green Category)")
             yield_min, yield_max = (850, 950) if "Fish" in species else (650, 750)
@@ -93,7 +91,6 @@ if st.button("🚀 Run AI Pond Health Assessment", use_container_width=True):
             st.metric(label="Estimated Harvest Yield / Acre", value=f"{yield_min} kg - {yield_max} kg (At Risk)")
             st.error("🚨 High ammonia or critical oxygen depletion! Immediate partial water exchange required.")
 
-        # Display Model Confidence Score
         st.write(f"**AI Model Confidence Score:** {risk_score}%")
     else:
         st.error("Model not initialized.")
